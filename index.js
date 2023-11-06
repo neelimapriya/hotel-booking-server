@@ -9,12 +9,12 @@ const port = process.env.PORT || 5000;
 
 const secret = "secrettoken";
 // middleware
-app.use(cors({
-  origin:[
-    'http://localhost:5173'
-  ],
-  credentials:true
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -55,26 +55,26 @@ async function run() {
           if (err) {
             return res.status(401).send({ message: "unauthorized" });
           }
+          req.user = decoded;
+          console.log(decoded);
+          next();
         }
       );
-      console.log(decoded);
-      req.user = decoded;
-      next();
     };
     // hotel room function
-    // http://localhost:5000/room?sortField=price&sortOrder=desc
+    // http://localhost:5000/api/v1/room?sortField=price&sortOrder=desc
     app.get("/api/v1/room", gateToken, async (req, res) => {
-      // let queryObj={}
-      // let sortObj={}
+      let queryObj = {};
+      let sortObj = {};
 
       // // const room =req.query.category
-      // const sortField =req.query.sortField;
-      // const sortOrder=req.query.sortOrder;
+      const sortField = req.query.sortField;
+      const sortOrder = req.query.sortOrder;
 
-      // if(sortField && sortOrder){
-      //   sortObj[sortField]=sortOrder
-      // }
-      const cursor = RoomCollection.find();
+      if (sortField && sortOrder) {
+        sortObj[sortField] = sortOrder;
+      }
+      const cursor = RoomCollection.find(queryObj).sort(sortObj);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -92,7 +92,7 @@ async function run() {
       const tokenEmail = req.user.email;
 
       if (queryEmail !== tokenEmail) {
-        return res.status(403).send({message:'forbidden access'})
+        return res.status(403).send({ message: "forbidden access" });
       }
       let query = {};
       if (queryEmail) {
@@ -100,7 +100,7 @@ async function run() {
       }
 
       const result = await bookingCollection.find(query).toArray();
-      res.send(result)
+      res.send(result);
     });
 
     app.delete("/api/v1/user/cancel-bookings/:bookingId", async (req, res) => {
@@ -122,7 +122,7 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: false,
+          secure: true,
           sameSite: "none",
         })
         .send({ success: true });
