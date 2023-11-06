@@ -68,16 +68,29 @@ async function run() {
       let sortObj = {};
 
       // // const room =req.query.category
-      const sortField = req.query.sortField;
+      const sortField =parseInt(req.query.sortField);
       const sortOrder = req.query.sortOrder;
+      console.log(sortField)
+      console.log(sortOrder)
 
       if (sortField && sortOrder) {
-        sortObj[sortField] = sortOrder;
+        sortObj[sortField] = parseInt(sortOrder);
       }
+      console.log(sortObj)
       const cursor = RoomCollection.find(queryObj).sort(sortObj);
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // room details
+    app.get("/api/v1/room/:id", async(req,res)=>{
+      const id=req.params.id;
+      console.log(id)
+      const query = { _id: new ObjectId(id) };
+      // console.log(query)
+      const result = await RoomCollection.findOne(query);
+      res.send(result);
+    })
 
     // booking
     app.post("/api/v1/user/create-bookings", async (req, res) => {
