@@ -42,13 +42,13 @@ async function run() {
 
     // verify token
     const gateToken=(req,res)=>{
-      const token= req.cookies;
+      const {token}= req.cookies;
       console.log(token)
 
     }
     // hotel room function
     // http://localhost:5000/room?sortField=price&sortOrder=desc
-    app.get('/api/v1/room',gateToken, async(req,res)=>{
+    app.get('/api/v1/room',gateToken , async(req,res)=>{
       // let queryObj={}
       // let sortObj={}
 
@@ -65,7 +65,7 @@ async function run() {
     })
 
     // booking
-    app.post('/api/v1/user/create-bookings' ,async(req,res)=>{
+    app.post('/api/v1/user/create-bookings',async(req,res)=>{
       const booking=req.body;
       const result =await bookingCollection.insertOne(booking)
       res.send(result)
@@ -80,7 +80,7 @@ async function run() {
     })
 
     // create token
-    app.post('/api/v1/auth/access-token',gateToken, (req,res)=>{
+    app.post('/api/v1/auth/access-token', (req,res)=>{
       const user=req.body;
       const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "5h",
@@ -89,7 +89,7 @@ async function run() {
       // res.send(token)
       res.cookie('token',token,{
         httpOnly: true,
-        secure: true,
+        secure: false,
         sameSite:'none'
       }).send({success:true})
     })
