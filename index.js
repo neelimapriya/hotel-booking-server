@@ -41,10 +41,21 @@ async function run() {
 
 
     // verify token
-    const gateToken=(req,res)=>{
-      const {token}= req.cookies;
-      console.log(token)
+    const gateToken=(req,res,next)=>{
+      const {token}= req?.cookies;
 
+      if(!token){
+        return res.status(401).send({message: 'unauthorized'})
+      }
+
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err,decoded){
+        if(err){
+          return res.status(401).send({message: 'unauthorized'})
+        }
+      })
+      console.log(decoded)
+      req.user=decoded;
+      next()
     }
     // hotel room function
     // http://localhost:5000/room?sortField=price&sortOrder=desc
