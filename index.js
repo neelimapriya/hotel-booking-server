@@ -116,6 +116,41 @@ async function run() {
       res.send(result);
     });
 
+    // update
+
+    app.get('/Booking/:id', async(req,res)=>{
+      const id=req.params.id;
+      const query={_id :new ObjectId(id)};
+      const result =await bookingCollection.findOne(query)
+      res.send(result)
+    })
+
+
+    app.put("/updateBooking/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProduct = req.body;
+      const product = {
+        $set: {
+          title: updateProduct.title,
+          checkin: updateProduct.checkin,
+          checkout: updateProduct.checkout,
+          type: updateProduct.type,
+          price: updateProduct.price,
+          size: updateProduct.size,
+          img1: updateProduct.img1,
+          
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        filter,
+        product,
+        options
+      );
+      res.send(result);
+    });
+
     app.delete("/api/v1/user/cancel-bookings/:bookingId", async (req, res) => {
       const id = req.params.bookingId;
       const query = { _id: new ObjectId(id) };
@@ -128,7 +163,7 @@ async function run() {
     app.post("/api/v1/auth/access-token", (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "5h",
+        expiresIn: "10h",
       });
       console.log(token);
       // res.send(token)
