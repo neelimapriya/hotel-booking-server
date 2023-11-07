@@ -176,6 +176,14 @@ async function run() {
       res.send(result);
     });
    
+ app.get("/reviewItem/:code", async (req, res) => {
+      const code = decodeURIComponent(req.params.code);
+      console.log(code);
+      const query = { code: code };
+      console.log(query);
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    });
 
 
     // create token
