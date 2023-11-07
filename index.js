@@ -39,6 +39,7 @@ async function run() {
 
     const RoomCollection = client.db("RoomDB").collection("room");
     const bookingCollection = client.db("RoomDB").collection("bookings");
+    const reviewCollection = client.db("RoomDB").collection("review");
 
     // verify token
     const gateToken = (req, res, next) => {
@@ -158,6 +159,24 @@ async function run() {
 
       res.send(result);
     });
+
+
+    // review 
+
+    app.post("/review", async (req, res) => {
+      const newReview = req.body;
+      // console.log(newProduct)
+      const result = await reviewCollection.insertOne(newReview);
+      res.send(result);
+    });
+    app.get("/reviewItem", async (req, res) => {
+      const cursor = reviewCollection.find();
+      const result = await cursor.toArray();
+      // console.log(result)
+      res.send(result);
+    });
+   
+
 
     // create token
     app.post("/api/v1/auth/access-token", (req, res) => {
