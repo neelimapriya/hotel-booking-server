@@ -11,7 +11,11 @@ const secret = "secrettoken";
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      // "http://localhost:5173",
+      'https://hotel-6de04.web.app',
+      'https://hotel-6de04.firebaseapp.com'
+    ],
     credentials: true,
   })
 );
