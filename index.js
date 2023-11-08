@@ -47,6 +47,8 @@ async function run() {
     const bookingCollection = client.db("RoomDB").collection("bookings");
     const reviewCollection = client.db("RoomDB").collection("review");
     const photoCollection = client.db("RoomDB").collection("photo");
+    const newsCollection = client.db("RoomDB").collection("news");
+    const contactCollection = client.db("RoomDB").collection("contact");
 
     // verify token
     const gateToken = (req, res, next) => {
@@ -222,6 +224,27 @@ async function run() {
 
     // gallery
 
+    app.get("/photo", async (req, res) => {
+      const cursor = photoCollection.find();
+      const result = await cursor.toArray();
+      console.log(result)
+      res.send(result);
+    });
+    // newsLetter
+    app.post("/news", async (req, res) => {
+      const newUser = req.body;
+      // console.log(newProduct)
+      const result = await newsCollection.insertOne(newUser);
+      res.send(result);
+    });
+
+    // contact
+    app.post("/contact", async (req, res) => {
+      const massege = req.body;
+      // console.log(newProduct)
+      const result = await contactCollection.insertOne(massege);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
