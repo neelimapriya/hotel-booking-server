@@ -7,12 +7,12 @@ const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
-const secret = "secrettoken";
+
 // middleware
 app.use(
   cors({
     origin: [
-      // "http://localhost:5173",
+      "http://localhost:5173",
       'https://hotel-6de04.web.app',
       'https://hotel-6de04.firebaseapp.com'
     ],
@@ -23,10 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // middlewares
-const logger =async(req, res, next)=>{
-  console.log('called', req.host, req.originalUrl )
-  next()
-}
+
 
 // console.log(process.env.HB_USER)
 // console.log(process.env.HB_PASS)
@@ -78,7 +75,7 @@ async function run() {
 
     
     // create token jwt
-    app.post("/api/v1/auth/access-token",logger, (req, res) => {
+    app.post("/api/v1/auth/access-token", (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "10h",
@@ -86,11 +83,12 @@ async function run() {
       console.log(token);
       // res.send(token)
       res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: true,
-          // sameSite: "none",
-        })
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', 
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+
+    })
         .send({ success: true });
     });
 
