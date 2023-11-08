@@ -18,6 +18,12 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// middlewares
+const logger =async(req, res, next)=>{
+  console.log('called', req.host, req.originalUrl )
+  next()
+}
+
 // console.log(process.env.HB_USER)
 // console.log(process.env.HB_PASS)
 
@@ -34,12 +40,13 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+   
+    
 
     const RoomCollection = client.db("RoomDB").collection("room");
     const bookingCollection = client.db("RoomDB").collection("bookings");
     const reviewCollection = client.db("RoomDB").collection("review");
+    const photoCollection = client.db("RoomDB").collection("photo");
 
     // verify token
     const gateToken = (req, res, next) => {
@@ -52,7 +59,7 @@ async function run() {
       jwt.verify(
         token,
         process.env.ACCESS_TOKEN_SECRET,
-        function (err, decoded) {
+         (err, decoded)=> {
           if (err) {
             return res.status(401).send({ message: "unauthorized" });
           }
@@ -62,9 +69,37 @@ async function run() {
         }
       );
     };
+
+    
+    // create token jwt
+    app.post("/api/v1/auth/access-token",logger, (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "10h",
+      });
+      console.log(token);
+      // res.send(token)
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          // sameSite: "none",
+        })
+        .send({ success: true });
+    });
+
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      console.log('logging out', user);
+      res
+          .clearCookie('token', { maxAge: 0, secure: true })
+          .send({ success: true })
+   })
+
+
     // hotel room function
     // http://localhost:5000/api/v1/room?sortField=price&sortOrder=desc
-    app.get("/api/v1/room", gateToken, async (req, res) => {
+    app.get("/api/v1/room", async (req, res) => {
       let queryObj = {};
       let sortObj = {};
 
@@ -169,10 +204,10 @@ async function run() {
       const result = await reviewCollection.insertOne(newReview);
       res.send(result);
     });
-    app.get("/reviewItem", async (req, res) => {
+    app.get("/api/v1/reviewItem", async (req, res) => {
       const cursor = reviewCollection.find();
       const result = await cursor.toArray();
-      // console.log(result)
+      console.log(result)
       res.send(result);
     });
    
@@ -185,23 +220,9 @@ async function run() {
       res.send(result);
     });
 
+    // gallery
 
-    // create token
-    app.post("/api/v1/auth/access-token", (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "10h",
-      });
-      console.log(token);
-      // res.send(token)
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        })
-        .send({ success: true });
-    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
